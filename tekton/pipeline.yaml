@@ -40,7 +40,7 @@ spec:
         - name: source
           workspace: pipeline-workspace
       taskRef:
-        name: nose  # Add a taskRef for the tests task
+        name: nose
       params:
         - name: args
           value: "-v --with-spec --spec-color"
@@ -59,3 +59,21 @@ spec:
       runAfter:
         - tests
         - lint  # Wait for both tests and lint to complete
+    - name: deploy
+      workspaces:
+        - name: manifest-dir  # Change the workspace name to manifest-dir
+          workspace: pipeline-workspace
+      taskRef:
+        name: openshift-client
+        kind: ClusterTask  # Use ClusterTask for openshift-client
+      params:
+        - name: SCRIPT  # Change IMAGE to SCRIPT
+          value: |
+            echo "Updating manifest..."
+            sed -i "s|IMAGE_NAME_HERE|$(params.build-image)|g" deploy/deployment.yaml
+            cat deploy/deployment.yaml
+            echo "Deploying to OpenShift..."
+            oc apply -f deploy/
+            oc get pods -l app=accounts
+      runAfter:
+        - build  # Ensure this task runs after the build task
