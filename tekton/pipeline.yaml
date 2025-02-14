@@ -40,10 +40,8 @@ spec:
         - name: source
           workspace: pipeline-workspace
       taskRef:
-        name: nose
+        name: nose  # Add a taskRef for the tests task
       params:
-        - name: database_uri
-          value: "sqlite:///test.db"
         - name: args
           value: "-v --with-spec --spec-color"
       runAfter:
@@ -54,9 +52,10 @@ spec:
           workspace: pipeline-workspace
       taskRef:
         name: buildah
-        kind: ClusterTask
+        kind: ClusterTask  # Add this line
       params:
         - name: IMAGE
-          value: "$(params.build-image)"  # Reference the build-image parameter
+          value: "$(params.build-image)"  # Use the build-image parameter
       runAfter:
         - tests
+        - lint  # Wait for both tests and lint to complete
